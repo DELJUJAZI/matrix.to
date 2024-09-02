@@ -22,18 +22,46 @@ import {Maturity, Platform, LinkKind, FlathubLink} from "../types.js";
 export class Fractal {
     get id() { return "fractal"; }
     get name() { return "Fractal"; }
-    get icon() { return "images/client-icons/fractal.png"; }
+    get icon() { return "images/client-icons/fractal.svg"; }
     get author() { return "Daniel Garcia Moreno"; }
-    get homepage() { return "https://gitlab.gnome.org/GNOME/fractal"; }
+    get homepage() { return "https://gitlab.gnome.org/World/fractal"; }
     get platforms() { return [Platform.Linux]; }
-    get description() { return 'Fractal is a Matrix Client written in Rust.'; }
+    get description() { return 'GNOME client, suitable for desktop and mobile. Written in Rust.'; }
     getMaturity(platform) { return Maturity.Beta; }
-    getDeepLink(platform, link) {}
+
+    getDeepLink(platform, link) {
+        if (platform === Platform.Linux) {
+            let identifier = encodeURIComponent(link.identifier.substring(1));
+            let isRoomid = link.identifier.substring(0, 1) === '!';
+            let fragmentPath;
+            switch (link.kind) {
+                case LinkKind.User:
+                    fragmentPath = `u/${identifier}?action=chat`;
+                    break;
+                case LinkKind.Room:
+                case LinkKind.Event:
+                    if (isRoomid)
+                        fragmentPath = `roomid/${identifier}`;
+                    else
+                        fragmentPath = `r/${identifier}`;
+
+                    if (link.kind === LinkKind.Event)
+                        fragmentPath += `/e/${encodeURIComponent(link.eventId.substring(1))}`;
+                    fragmentPath += '?action=join';
+                    fragmentPath += link.servers.map(server => `&via=${encodeURIComponent(server)}`).join('');
+                    break;
+                case LinkKind.Group:
+                    return;
+            }
+            return `matrix:${fragmentPath}`;
+        }
+    }
+
     canInterceptMatrixToLinks(platform) { return false; }
 
     getLinkInstructions(platform, link) {
         if (link.kind === LinkKind.User || link.kind === LinkKind.Room) {
-            return "Click the '+' button in the top right and paste the identifier";
+            return "Click the menu button above the list of rooms, select the Join Room entry, and paste the identifier";
         }
     }
 

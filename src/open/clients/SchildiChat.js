@@ -14,46 +14,35 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-import {Maturity, Platform, LinkKind,
-    FDroidLink, AppleStoreLink, PlayStoreLink, WebsiteLink} from "../types.js";
+import {
+    Maturity, Platform, LinkKind,
+    FDroidLink, FlathubLink, PlayStoreLink, WebsiteLink
+} from "../types.js";
 
 const trustedWebInstances = [
-    "app.element.io",   // first one is the default one
-    "develop.element.io",
-    "chat.fedoraproject.org",
-    "chat.fosdem.org",
-    "chat.mozilla.org",
-    "webchat.kde.org",
-    "app.gitter.im",
+    "app.schildi.chat",   // first one is the default one
+    "test.schildi.chat",
 ];
 
 /**
  * Information on how to deep link to a given matrix client.
  */
-export class Element {
-    get id() { return "element.io"; }
+export class SchildiChat {
+    get id() { return "schildi.chat"; }
 
     get platforms() {
         return [
-            Platform.Android, Platform.iOS,
+            Platform.Android,
             Platform.Windows, Platform.macOS, Platform.Linux,
             Platform.DesktopWeb
         ];
     }
 
-    get icon() { return "images/client-icons/element.svg"; }
-    get appleAssociatedAppId() { 
-        return [
-            "7J4U792NQT.im.vector.app",
-            "7J4U792NQT.io.element.elementx",
-            "7J4U792NQT.io.element.elementx.nightly",
-            "7J4U792NQT.io.element.elementx.pr"
-        ]; 
-    }
-    get name() {return "Element"; }
-    get description() { return 'Fully-featured Matrix client, used by millions.'; }
-    get homepage() { return "https://element.io"; }
-    get author() { return "Element"; }
+    get icon() { return "images/client-icons/schildichat.svg"; }
+    get name() { return "SchildiChat"; }
+    get description() { return 'Feature-rich messenger for Matrix based on Element with some extras and tweaks.'; }
+    get homepage() { return "https://schildi.chat"; }
+    get author() { return "SchildiChat team"; }
     getMaturity(platform) { return Maturity.Stable; }
 
     getDeepLink(platform, link) {
@@ -78,28 +67,37 @@ export class Element {
         }
 
         const isWebPlatform = platform === Platform.DesktopWeb || platform === Platform.MobileWeb;
-        if (isWebPlatform || platform === Platform.iOS) {
+        if (isWebPlatform) {
             let instanceHost = trustedWebInstances[0];
-            // we use app.element.io which iOS will intercept, but it likely won't intercept any other trusted instances
-            // so only use a preferred web instance for true web links.
             if (isWebPlatform && trustedWebInstances.includes(link.webInstances[this.id])) {
                 instanceHost = link.webInstances[this.id];
             }
             return `https://${instanceHost}/#/${fragmentPath}`;
         } else if (platform === Platform.Linux || platform === Platform.Windows || platform === Platform.macOS) {
-            return `element://vector/webapp/#/${fragmentPath}`;
+            return `schildichat://vector/webapp/#/${fragmentPath}`;
         } else {
-            return `element://${fragmentPath}`;
+            return `schildichat://${fragmentPath}`;
         }
     }
 
-    getLinkInstructions(platform, link) {}
-    getCopyString(platform, link) {}
+    getLinkInstructions(platform, link) { }
+    getCopyString(platform, link) { }
     getInstallLinks(platform) {
         switch (platform) {
-            case Platform.iOS: return [new AppleStoreLink('vector', 'id1083446067')];
-            case Platform.Android: return [new PlayStoreLink('im.vector.app'), new FDroidLink('im.vector.app')];
-            default: return [new WebsiteLink("https://element.io/download")];
+            case Platform.Linux:
+                return [
+                    new FlathubLink("chat.schildi.desktop"),
+                    new WebsiteLink("https://schildi.chat/desktop/"),
+                ]
+            case Platform.Windows || Platform.macOS:
+                return [new WebsiteLink("https://schildi.chat/desktop/")];
+            case Platform.Android:
+                return [
+                    new PlayStoreLink('de.spiritcroc.riotx'),
+                    new FDroidLink('de.spiritcroc.riotx'),
+                    new WebsiteLink("https://schildi.chat/android/"),
+                ];
+            default: return [new WebsiteLink("https://schildi.chat")];
         }
     }
 
